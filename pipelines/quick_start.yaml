@@ -1,0 +1,29 @@
+name: "Quick Start Demo"
+description: "A minimal demo showing the basic workflow framework"
+version: "1.0"
+
+steps:
+  # Step 1: Generate sample data
+  - id: "generate_data"
+    name: "Generate Sample Data"
+    component: "src/1_stage_pre_process/data_loader.py"
+    stage: 1
+    parameters:
+      --generate-sample: true
+      --output-path: "data/quick_start.csv"
+    
+  # Step 2: Create a simple report
+  - id: "create_report"  
+    name: "Create Simple Report"
+    component: "src/3_stage_post_process/simple_reporter.py"
+    stage: 2
+    depends_on: ["generate_data"]
+    parameters:
+      --input-path: "data/quick_start.csv"
+      --output-path: "data/quick_start_report.html"
+      --format: "html"
+      --title: "Quick Start Demo Report"
+
+settings:
+  continue_on_error: false
+  log_level: "INFO"

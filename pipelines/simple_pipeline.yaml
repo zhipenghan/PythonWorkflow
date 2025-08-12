@@ -1,0 +1,86 @@
+name: "Simple Data Processing Pipeline"
+description: "A basic pipeline demonstrating the workflow framework with simple data processing"
+version: "1.0"
+
+# Pipeline configuration
+stages:
+  - name: "Data Loading"
+    description: "Load and prepare sample data"
+    
+  - name: "Data Processing" 
+    description: "Transform and analyze the data"
+    
+  - name: "Results Export"
+    description: "Generate reports and export results"
+
+# Step definitions
+steps:
+  # Stage 1: Data Loading
+  - id: "load_data"
+    name: "Load Sample Data"
+    component: "src/1_stage_pre_process/data_loader.py"
+    stage: 1
+    parameters:
+      --generate-sample: true
+      --output-path: "data/processed/sample_data.csv"
+      --clean-data: true
+    
+  # Stage 2: Data Processing
+  - id: "transform_data"
+    name: "Transform Data"
+    component: "src/2_stage_process/feature_engineering.py"
+    stage: 2
+    depends_on: ["load_data"]
+    parameters:
+      --input-path: "data/processed/sample_data.csv"
+      --output-path: "data/processed/transformed_data.csv"
+      --add-calculations: true
+      --create-aggregations: true
+      --format-data: true
+    
+  - id: "analyze_data"
+    name: "Analyze Data"
+    component: "src/2_stage_process/data_analyzer.py"
+    stage: 2
+    depends_on: ["transform_data"]
+    parameters:
+      --input-path: "data/processed/transformed_data.csv"
+      --output-path: "data/results/analysis_report.json"
+      --save-format: "json"
+  
+  # Stage 3: Results Export
+  - id: "generate_report"
+    name: "Generate HTML Report"
+    component: "src/3_stage_post_process/simple_reporter.py"
+    stage: 3
+    depends_on: ["analyze_data"]
+    parameters:
+      --input-path: "data/processed/transformed_data.csv"
+      --output-path: "data/results/report.html"
+      --format: "html"
+      --title: "Simple Pipeline Results"
+  
+  - id: "export_results"
+    name: "Export Final Results"
+    component: "src/3_stage_post_process/data_exporter.py"
+    stage: 3
+    depends_on: ["generate_report"]
+    parameters:
+      --input-path: "data/processed/transformed_data.csv"
+      --output-dir: "data/final"
+      --formats: ["csv", "json"]
+      --filename: "final_results"
+      --create-archive: true
+      --save-summary: true
+
+# Global settings
+settings:
+  max_parallel_steps: 2
+  continue_on_error: false
+  log_level: "INFO"
+  
+# Output configuration
+outputs:
+  results_directory: "data/results"
+  final_directory: "data/final"
+  cleanup_intermediate: false

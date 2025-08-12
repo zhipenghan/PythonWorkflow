@@ -205,3 +205,31 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# PythonWorkflow specific files
+# Data files (uncomment to track specific data files)
+data/raw/*.csv
+data/processed/*.csv
+data/validation/*.json
+
+# Model files
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.sav
+
+# Generated reports
+reports/*.html
+reports/*.pdf
+reports/*.png
+
+# Export files
+exports/*.zip
+exports/*.csv
+exports/*.xlsx
+exports/*.json
+exports/*.parquet
+
+# Temporary pipeline outputs
+*.tmp
+*.temp
