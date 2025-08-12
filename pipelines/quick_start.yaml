@@ -11,7 +11,7 @@ steps:
     parameters:
       --generate-sample: true
       --output-path: "data/quick_start.csv"
-    
+
   # Step 2: Create a simple report
   - id: "create_report"  
     name: "Create Simple Report"

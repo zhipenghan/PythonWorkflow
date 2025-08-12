@@ -46,19 +46,19 @@ def export_to_excel(df, output_path):
 def create_data_archive(files, archive_path):
     """Create a compressed archive of exported files."""
     logger.info(f"Creating archive: {archive_path}")
-    
+
     try:
         import zipfile
-        
+
         with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for file_path in files:
                 if Path(file_path).exists():
                     zipf.write(file_path, Path(file_path).name)
                     logger.info(f"Added {Path(file_path).name} to archive")
-        
+
         logger.info(f"Archive created successfully: {archive_path}")
         return archive_path
-    
+
     except ImportError:
         logger.warning("zipfile not available, skipping archive creation")
         return None
@@ -66,7 +66,7 @@ def create_data_archive(files, archive_path):
 def generate_export_summary(df, exported_files):
     """Generate a summary of the export process."""
     logger.info("Generating export summary")
-    
+
     summary = {
         'export_timestamp': pd.Timestamp.now().isoformat(),
         'dataset_info': {
@@ -77,7 +77,7 @@ def generate_export_summary(df, exported_files):
         },
         'exported_files': []
     }
-    
+
     for file_path in exported_files:
         if Path(file_path).exists():
             file_info = {
@@ -87,7 +87,7 @@ def generate_export_summary(df, exported_files):
                 'path': str(file_path)
             }
             summary['exported_files'].append(file_info)
-    
+
     return summary
 
 def main():
@@ -102,13 +102,13 @@ def main():
                        help='Create compressed archive of exported files')
     parser.add_argument('--save-summary', action='store_true',
                        help='Save export summary as JSON')
-    
+
     args = parser.parse_args()
-    
+
     try:
         # Load data
         logger.info(f"Loading data from {args.input_path}")
-        
+
         # Try to load as CSV first, then JSON
         try:
             df = pd.read_csv(args.input_path)
@@ -120,39 +120,39 @@ def main():
             except:
                 logger.error("Could not load data. Supported formats: CSV, JSON")
                 raise
-        
+
         logger.info(f"Loaded data with shape: {df.shape}")
-        
+
         # Create output directory
         output_dir = Path(args.output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Export to specified formats
         exported_files = []
-        
+
         for format_type in args.formats:
             if format_type == 'csv':
                 output_path = output_dir / f"{args.filename}.csv"
                 exported_files.append(export_to_csv(df, output_path))
-            
+
             elif format_type == 'json':
                 output_path = output_dir / f"{args.filename}.json"
                 exported_files.append(export_to_json(df, output_path))
-            
+
             elif format_type == 'excel':
                 output_path = output_dir / f"{args.filename}.xlsx"
                 exported_files.append(export_to_excel(df, output_path))
-        
+
         # Generate and save summary
         summary = generate_export_summary(df, exported_files)
-        
+
         if args.save_summary:
             summary_path = output_dir / f"{args.filename}_summary.json"
             with open(summary_path, 'w') as f:
                 json.dump(summary, f, indent=2, default=str)
             logger.info(f"Export summary saved to: {summary_path}")
             exported_files.append(summary_path)
-        
+
         # Create archive if requested
         archive_path = None
         if args.create_archive:
@@ -160,17 +160,17 @@ def main():
             archive_result = create_data_archive(exported_files, archive_path)
             if archive_result:
                 exported_files.append(archive_result)
-        
+
         # Print summary
         print(f"✅ Data export completed successfully!")
         print(f"📁 Output directory: {output_dir}")
         print(f"📄 Exported {len(exported_files)} files:")
-        
+
         for file_path in exported_files:
             if Path(file_path).exists():
                 size_kb = round(Path(file_path).stat().st_size / 1024, 2)
                 print(f"   - {Path(file_path).name} ({size_kb} KB)")
-        
+
     except Exception as e:
         logger.error(f"Error in data export: {str(e)}")
         print(f"❌ Data export failed: {str(e)}")

@@ -21,7 +21,7 @@ def run_pipeline(yaml_file):
 
     total_steps = len(steps)
     step_number = 0
-    
+
     # Print pipeline header
     pipeline_name = config.get('name', 'Unnamed Pipeline')
     pipeline_description = config.get('description', 'No description')
@@ -32,7 +32,7 @@ def run_pipeline(yaml_file):
     for step in steps:
         step_number += 1
         name = step.get('name', step.get('id', f'Step {step_number}'))
-        
+
         # Handle both old and new formats
         if 'script' in step:
             script = Path(step['script'])
@@ -51,7 +51,7 @@ def run_pipeline(yaml_file):
                 flag = key  # Already has --
             else:
                 flag = f"--{key.replace('_', '-')}"
-            
+
             if isinstance(value, bool):
                 if value:
                     args.append(flag)
@@ -65,7 +65,7 @@ def run_pipeline(yaml_file):
 
         # Create full command for display
         cmd_str = f"python {script} {' '.join(args)}"
-        
+
         # Print step information
         print(f"\n{'='*80}")
         print(f"🚀 Running step {step_number}/{total_steps}: {name}")
@@ -74,7 +74,7 @@ def run_pipeline(yaml_file):
         print(f"Working directory: {os.getcwd()}")
         print(f"Full command:\n{cmd_str}")
         print(f"{'-'*80}")
-        
+
         # Run the command
         result = subprocess.run(['python', str(script)] + args, capture_output=False)
 
@@ -101,12 +101,12 @@ if __name__ == "__main__":
         print(f"📋 No pipeline specified, running default: {default_pipeline}")
         print("💡 Usage: python run_pipeline.py <pipeline.yaml>")
         print("📁 Available pipelines:")
-        
+
         pipeline_dir = Path("pipelines")
         if pipeline_dir.exists():
             for pipeline_file in pipeline_dir.glob("*.yaml"):
                 print(f"   - {pipeline_file}")
-        
+
         print(f"\n🚀 Running default pipeline: {default_pipeline}")
         if Path(default_pipeline).exists():
             run_pipeline(default_pipeline)

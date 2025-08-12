@@ -24,56 +24,56 @@ logger = logging.getLogger(__name__)
 def add_calculated_fields(df):
     """Add simple calculated fields based on existing data."""
     logger.info("Adding calculated fields")
-    
+
     if 'value' in df.columns and 'quantity' in df.columns:
         df['total_value'] = df['value'] * df['quantity']
         logger.info("Added 'total_value' field")
-    
+
     if 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date'])
         df['year'] = df['date'].dt.year
         df['month'] = df['date'].dt.month
         df['day_of_week'] = df['date'].dt.dayofweek
         logger.info("Added date-based fields")
-    
+
     return df
 
 def create_aggregations(df, group_by_col='category'):
     """Create summary aggregations."""
     logger.info(f"Creating aggregations grouped by '{group_by_col}'")
-    
+
     if group_by_col not in df.columns:
         logger.warning(f"Column '{group_by_col}' not found, skipping aggregations")
         return df
-    
+
     # Create aggregation summary
     agg_stats = df.groupby(group_by_col).agg({
         'value': ['count', 'mean', 'sum'],
         'quantity': ['mean', 'sum'] if 'quantity' in df.columns else 'count'
     }).round(2)
-    
+
     # Flatten column names
     agg_stats.columns = ['_'.join(col).strip() for col in agg_stats.columns]
-    
+
     # Merge back to original data
     df = df.merge(agg_stats, left_on=group_by_col, right_index=True, how='left')
-    
+
     logger.info(f"Added {len(agg_stats.columns)} aggregation fields")
     return df
 
 def format_data(df):
     """Apply formatting to the data."""
     logger.info("Applying data formatting")
-    
+
     # Round numeric columns to 2 decimal places
     numeric_cols = df.select_dtypes(include=[np.number]).columns
     for col in numeric_cols:
         df[col] = df[col].round(2)
-    
+
     # Convert category to title case
     if 'category' in df.columns:
         df['category'] = df['category'].str.title()
-    
+
     logger.info("Applied formatting to numeric and text fields")
     return df
 
@@ -81,19 +81,19 @@ def apply_filters(df, min_value=None, max_value=None, categories=None):
     """Apply filtering criteria."""
     logger.info("Applying filters")
     initial_rows = len(df)
-    
+
     if min_value is not None and 'value' in df.columns:
         df = df[df['value'] >= min_value]
         logger.info(f"Applied min_value filter: {min_value}")
-    
+
     if max_value is not None and 'value' in df.columns:
         df = df[df['value'] <= max_value]
         logger.info(f"Applied max_value filter: {max_value}")
-    
+
     if categories and 'category' in df.columns:
         df = df[df['category'].isin(categories)]
         logger.info(f"Applied category filter: {categories}")
-    
+
     logger.info(f"Filtered from {initial_rows} to {len(df)} rows")
     return df
 
@@ -108,40 +108,40 @@ def main():
     parser.add_argument('--min-value', type=float, help='Minimum value filter')
     parser.add_argument('--max-value', type=float, help='Maximum value filter')
     parser.add_argument('--categories', nargs='+', help='Categories to include in filter')
-    
+
     args = parser.parse_args()
-    
+
     try:
         # Load data
         logger.info(f"Loading data from {args.input_path}")
         df = pd.read_csv(args.input_path)
         logger.info(f"Loaded data with shape: {df.shape}")
-        
+
         # Apply transformations
         if args.add_calculations:
             df = add_calculated_fields(df)
-        
+
         if args.create_aggregations:
             df = create_aggregations(df, args.group_by)
-        
+
         if args.format_data:
             df = format_data(df)
-        
+
         # Apply filters
         if args.min_value or args.max_value or args.categories:
             df = apply_filters(df, args.min_value, args.max_value, args.categories)
-        
+
         # Save transformed data
         output_path = Path(args.output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(output_path, index=False)
-        
+
         logger.info("Data Transformation Summary:")
         logger.info(f"  - Final shape: {df.shape}")
         logger.info(f"  - Columns: {list(df.columns)}")
-        
+
         print("✅ Data transformation completed successfully!")
-        
+
     except Exception as e:
         logger.error(f"Error in data transformation: {str(e)}")
         print(f"❌ Data transformation failed: {str(e)}")

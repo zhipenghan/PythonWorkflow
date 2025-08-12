@@ -6,10 +6,10 @@ version: "1.0"
 stages:
   - name: "Data Loading"
     description: "Load and prepare sample data"
-    
+
   - name: "Data Processing" 
     description: "Transform and analyze the data"
-    
+
   - name: "Results Export"
     description: "Generate reports and export results"
 
@@ -24,7 +24,7 @@ steps:
       --generate-sample: true
       --output-path: "data/processed/sample_data.csv"
       --clean-data: true
-    
+
   # Stage 2: Data Processing
   - id: "transform_data"
     name: "Transform Data"
@@ -37,7 +37,7 @@ steps:
       --add-calculations: true
       --create-aggregations: true
       --format-data: true
-    
+
   - id: "analyze_data"
     name: "Analyze Data"
     component: "src/2_stage_process/data_analyzer.py"
