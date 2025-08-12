@@ -211,6 +211,7 @@ __marimo__/
 data/raw/*.csv
 data/processed/*.csv
 data/validation/*.json
+data/*
 
 # Model files
 models/*.pkl
